@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-Green Network</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Poppins', sans-serif; }
+
+    body { background-color:#f4f7f6; color:#333; scroll-behavior:smooth; }
+    a { text-decoration:none; color:inherit; }
+
+    header {
+      height:100vh;
+      background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg') center/cover no-repeat;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:white;
+    }
+    header h1 { font-size:3em; margin-bottom:20px; color:#00a86b; }
+    header p { font-size:1.2em; max-width:700px; line-height:1.6; }
+
+    section { padding:80px 10%; }
+    h2 { font-size:2em; margin-bottom:25px; color:#0077b6; }
+    p { font-size:1.1em; line-height:1.8; margin-bottom:15px; }
+
+    .steps { display:flex; flex-wrap:wrap; gap:30px; margin-top:40px; }
+    .step {
+      flex:1 1 250px;
+      background:#e0f7f1;
+      border-radius:10px;
+      padding:25px;
+      box-shadow:0 5px 15px rgba(0,0,0,0.1);
+      transition:transform 0.3s ease;
+    }
+    .step:hover { transform:translateY(-10px); }
+    .step h3 { margin-bottom:15px; color:#0077b6; }
+
+    .chart { display:flex; align-items:flex-end; justify-content:space-around; height:250px; margin-top:40px; background:#fff; border-radius:10px; padding:20px; box-shadow:0 5px 15px rgba(0,0,0,0.05); }
+    .bar { width:50px; background:linear-gradient(180deg,#00a86b,#0077b6); border-radius:6px; position:relative; cursor:pointer; transition: all 0.3s ease; }
+    .bar span { position:absolute; bottom:-25px; width:100%; text-align:center; font-size:0.9em; color:#333; }
+    .bar:hover { transform:scaleY(1.15); filter:brightness(1.3); }
+
+    footer { background:#0077b6; color:white; text-align:center; padding:40px 10%; margin-top:50px; font-size:0.95em; }
+
+    @media(max-width:768px){
+      .steps { flex-direction:column; }
+      .chart { flex-direction:column; height:auto; padding:30px 0; }
+      .bar { margin-bottom:20px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Hero -->
+  <header>
+    <h1>AI-Green Network</h1>
+    <p>데이터로 연결되는 글로벌 친환경 비즈니스 플랫폼.<br>
+    AI가 기업과 국가를 매칭하여 지속가능한 성장과 탄소 감축을 동시에 실현합니다.</p>
+  </header>
+
+  <!-- Problem Section -->
+  <section>
+    <h2>기후 불평등과 비즈니스 기회</h2>
+    <p>기후 위기의 피해는 모든 나라에 영향을 미치지만, 개발도상국은 자본과 기술 부족으로 대응이 어렵습니다.</p>
+    <p>친환경 기술을 가진 기업과 탄소 감축이 필요한 기업을 연결하면, 기후 위기를 해결하면서 **새로운 비즈니스 기회를 창출**할 수 있습니다.</p>
+  </section>
+
+  <!-- Solution Section -->
+  <section>
+    <h2>AI-Green Network 작동 원리</h2>
+    <div class="steps">
+      <div class="step">
+        <h3>1️⃣ 데이터 분석</h3>
+        <p>각국과 기업의 탄소 배출량, 재생에너지 투자, 기술력 데이터를 AI가 분석합니다.</p>
+      </div>
+      <div class="step">
+        <h3>2️⃣ 기업·국가 매칭</h3>
+        <p>AI가 탄소 감축 필요 기업과 친환경 기술 보유 기업을 연결하여 공동 프로젝트를 제안합니다.</p>
+      </div>
+      <div class="step">
+        <h3>3️⃣ 지속가능한 공동 성장</h3>
+        <p>협력 프로젝트를 통해 탄소 감축을 달성하고, 동시에 새로운 시장과 비즈니스 기회를 창출합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Chart Section -->
+  <section>
+    <h2>국가별 감축률 시뮬레이션</h2>
+    <p>마우스를 올리면 각국의 협력 효과를 시각적으로 확인할 수 있습니다.</p>
+    <div class="chart">
+      <div class="bar" style="height:160px;"><span>한국</span></div>
+      <div class="bar" style="height:200px;"><span>독일</span></div>
+      <div class="bar" style="height:140px;"><span>인도</span></div>
+      <div class="bar" style="height:180px;"><span>미국</span></div>
+      <div class="bar" style="height:120px;"><span>브라질</span></div>
+    </div>
+  </section>
+
+  <!-- Business Impact Section -->
+  <section>
+    <h2>AI로 실현하는 비즈니스 사례</h2>
+    <p>예시 시나리오: 방글라데시 섬유기업 🌱 + 독일 재생에너지 스타트업 ⚙️</p>
+    <p>AI가 프로젝트를 매칭하여 연간 20% 탄소 감축과 신시장 진출을 동시에 달성했습니다.</p>
+  </section>
+
+  <footer>
+    © 2025 AI-Green Network | "Sustainability is not a cost — it’s the future of business."
+  </footer>
+
+  <script>
+    // Bar Hover Animation (간단)
+    const bars = document.querySelectorAll(".bar");
+    bars.forEach(bar => {
+      const height = bar.style.height;
+      bar.style.height = "0px";
+      setTimeout(() => { bar.style.transition = "height 1s ease"; bar.style.height = height; }, 300);
+    });
+  </script>
+</body>
+</html>
