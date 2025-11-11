@@ -1,122 +1,525 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI-Green Network</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI-Green Network — 시뮬레이터</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-
-    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Poppins', sans-serif; }
-
-    body { background-color:#f4f7f6; color:#333; scroll-behavior:smooth; }
-    a { text-decoration:none; color:inherit; }
-
-    header {
-      height:100vh;
-      background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg') center/cover no-repeat;
-      display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:white;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+    :root{
+      --bg:#f6f9f9; --card:#ffffff; --accent:#0077b6; --accent2:#00a86b; --muted:#5c6b6b;
+      --glass: rgba(255,255,255,0.6);
     }
-    header h1 { font-size:3em; margin-bottom:20px; color:#00a86b; }
-    header p { font-size:1.2em; max-width:700px; line-height:1.6; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, system-ui, -apple-system; background:linear-gradient(180deg,#f4fbfb,#eef7f6); color:#05323a}
+    header{padding:36px 6%; display:flex; align-items:center; gap:20px; background:linear-gradient(90deg, rgba(0,119,182,0.95), rgba(0,168,107,0.95)); color:white}
+    header h1{margin:0;font-size:1.6rem}
+    header p{margin:0; opacity:0.9; font-size:0.95rem}
 
-    section { padding:80px 10%; }
-    h2 { font-size:2em; margin-bottom:25px; color:#0077b6; }
-    p { font-size:1.1em; line-height:1.8; margin-bottom:15px; }
+    main{max-width:1200px;margin:28px auto;padding:0 6% 80px}
+    .grid{display:grid; grid-template-columns: 1fr 420px; gap:20px}
+    @media(max-width:980px){ .grid{grid-template-columns:1fr}}
 
-    .steps { display:flex; flex-wrap:wrap; gap:30px; margin-top:40px; }
-    .step {
-      flex:1 1 250px;
-      background:#e0f7f1;
-      border-radius:10px;
-      padding:25px;
-      box-shadow:0 5px 15px rgba(0,0,0,0.1);
-      transition:transform 0.3s ease;
-    }
-    .step:hover { transform:translateY(-10px); }
-    .step h3 { margin-bottom:15px; color:#0077b6; }
+    .card{background:var(--card); padding:16px; border-radius:10px; box-shadow:0 8px 24px rgba(8,40,40,0.06); border:1px solid rgba(4,89,83,0.04)}
 
-    .chart { display:flex; align-items:flex-end; justify-content:space-around; height:250px; margin-top:40px; background:#fff; border-radius:10px; padding:20px; box-shadow:0 5px 15px rgba(0,0,0,0.05); }
-    .bar { width:50px; background:linear-gradient(180deg,#00a86b,#0077b6); border-radius:6px; position:relative; cursor:pointer; transition: all 0.3s ease; }
-    .bar span { position:absolute; bottom:-25px; width:100%; text-align:center; font-size:0.9em; color:#333; }
-    .bar:hover { transform:scaleY(1.15); filter:brightness(1.3); }
+    .section-title{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+    .section-title h2{font-size:1.05rem;margin:0;color:var(--accent)}
+    .muted{color:var(--muted); font-size:0.92rem}
 
-    footer { background:#0077b6; color:white; text-align:center; padding:40px 10%; margin-top:50px; font-size:0.95em; }
+    /* lists */
+    .list{max-height:280px; overflow:auto; padding:8px; display:flex; flex-direction:column; gap:8px}
+    .item{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px; border-radius:8px; background:linear-gradient(180deg,#fbfffe,#f0faf9)}
+    .item .meta{font-size:0.9rem;color:#04332f}
+    .small{font-size:0.85rem;color:var(--muted)}
 
-    @media(max-width:768px){
-      .steps { flex-direction:column; }
-      .chart { flex-direction:column; height:auto; padding:30px 0; }
-      .bar { margin-bottom:20px; }
-    }
+    /* controls */
+    .controls{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px}
+    .btn{background:var(--accent);color:white;padding:10px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+    .btn.alt{background:transparent;color:var(--accent);border:1px solid rgba(0,119,182,0.12)}
+    .btn.ghost{background:#e8f6f4;color:var(--accent2); border:1px solid rgba(0,168,107,0.06)}
+
+    .form-row{display:flex;gap:8px; margin-bottom:8px}
+    .form-row input, .form-row select{flex:1;padding:8px;border-radius:8px;border:1px solid #dfeef0}
+
+    /* results table */
+    table{width:100%; border-collapse:collapse; font-size:0.95rem}
+    th,td{padding:10px;text-align:left;border-bottom:1px solid #eef6f5}
+    th{background:#f4fbfb;color:var(--accent);font-weight:600}
+
+    /* network svg */
+    .network-wrap{height:360px; display:flex; align-items:center; justify-content:center}
+    svg.network{width:100%; height:100%; background:linear-gradient(90deg,#fbfefe,#f0fbfb); border-radius:8px; padding:12px}
+    .node{cursor:pointer; transition:transform .18s}
+    .node:hover{transform:scale(1.04)}
+
+    /* slider */
+    .slider-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .slider-row input[type='range']{width:100%}
+
+    .foot{margin-top:12px;font-size:0.9rem;color:var(--muted)}
+    .hint{font-size:0.85rem;color:#6c7e7e}
   </style>
 </head>
-
 <body>
-  <!-- Hero -->
   <header>
-    <h1>AI-Green Network</h1>
-    <p>데이터로 연결되는 글로벌 친환경 비즈니스 플랫폼.<br>
-    AI가 기업과 국가를 매칭하여 지속가능한 성장과 탄소 감축을 동시에 실현합니다.</p>
+    <div>
+      <h1>AI-Green Network</h1>
+      <p>시뮬레이터 — 데이터 기반으로 '기후 해결이 곧 비즈니스'가 되는 매칭을 보여줍니다.</p>
+    </div>
+    <div style="margin-left:auto" class="small">Export CSV · Adjust weights · Add entries</div>
   </header>
 
-  <!-- Problem Section -->
-  <section>
-    <h2>기후 불평등과 비즈니스 기회</h2>
-    <p>기후 위기의 피해는 모든 나라에 영향을 미치지만, 개발도상국은 자본과 기술 부족으로 대응이 어렵습니다.</p>
-    <p>친환경 기술을 가진 기업과 탄소 감축이 필요한 기업을 연결하면, 기후 위기를 해결하면서 **새로운 비즈니스 기회를 창출**할 수 있습니다.</p>
-  </section>
+  <main>
+    <div class="grid">
+      <!-- LEFT: Core UI -->
+      <div>
+        <!-- Data inputs -->
+        <div class="card" aria-live="polite">
+          <div class="section-title"><h2>데이터 (샘플 포함)</h2><div class="muted">기업/국가 프로파일을 추가해보세요</div></div>
 
-  <!-- Solution Section -->
-  <section>
-    <h2>AI-Green Network 작동 원리</h2>
-    <div class="steps">
-      <div class="step">
-        <h3>1️⃣ 데이터 분석</h3>
-        <p>각국과 기업의 탄소 배출량, 재생에너지 투자, 기술력 데이터를 AI가 분석합니다.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <button id="loadSample" class="btn">샘플 불러오기</button>
+            <button id="clearAll" class="btn alt">모두 초기화</button>
+            <button id="downloadData" class="btn alt">데이터 다운로드 (JSON)</button>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <input id="newName" placeholder="이름 (기업/국가)" />
+            <select id="newType">
+              <option value="company">기업</option>
+              <option value="country">국가</option>
+            </select>
+            <input id="newSector" placeholder="섹터 (예: energy, textiles)" />
+          </div>
+          <div class="form-row">
+            <input id="newEmission" placeholder="탄소배출 지수 (0-100)" />
+            <input id="newTech" placeholder="기술력 지수 (0-100)" />
+            <input id="newInvest" placeholder="투자여력 (0-100)" />
+            <button id="addEntry" class="btn ghost">추가</button>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+            <div style="flex:1">
+              <div class="small">데이터 항목</div>
+              <div class="list" id="dataList"></div>
+            </div>
+
+            <div style="width:220px">
+              <div class="small">매칭 가중치 조정</div>
+              <div style="margin-top:6px" class="card">
+                <div class="small">탄소 감축 필요성 (emission gap)</div>
+                <div class="slider-row"><input id="wEmission" type="range" min="0" max="2" step="0.1" value="1"> <div id="wEVal" style="width:48px;text-align:right">1.0</div></div>
+
+                <div class="small">기술 적합성 (tech)</div>
+                <div class="slider-row"><input id="wTech" type="range" min="0" max="2" step="0.1" value="1"> <div id="wTVal" style="width:48px;text-align:right">1.0</div></div>
+
+                <div class="small">투자 여력 (invest)</div>
+                <div class="slider-row"><input id="wInvest" type="range" min="0" max="2" step="0.1" value="0.8"> <div id="wIVal" style="width:48px;text-align:right">0.8</div></div>
+
+                <div style="margin-top:8px; font-size:0.85rem" class="hint">가중치는 매칭 알고리즘의 우선순위를 조정합니다.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Matching controls -->
+        <div class="card" style="margin-top:16px">
+          <div class="section-title"><h2>매칭 실행</h2><div class="muted">AI(모사) 엔진을 실행하여 추천 파트너를 생성합니다</div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+            <button id="runMatch" class="btn">매칭 실행</button>
+            <button id="exportCSV" class="btn alt">결과 CSV 다운로드</button>
+            <button id="resetMatches" class="btn alt">결과 초기화</button>
+          </div>
+
+          <div class="small" style="margin-bottom:8px">매칭 결과 (상세 점수 — 높은 점수일수록 더 적합)</div>
+          <div style="overflow:auto;max-height:320px">
+            <table id="resultTable">
+              <thead><tr><th>공여자</th><th>수혜자</th><th>점수</th><th>상세</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
-      <div class="step">
-        <h3>2️⃣ 기업·국가 매칭</h3>
-        <p>AI가 탄소 감축 필요 기업과 친환경 기술 보유 기업을 연결하여 공동 프로젝트를 제안합니다.</p>
-      </div>
-      <div class="step">
-        <h3>3️⃣ 지속가능한 공동 성장</h3>
-        <p>협력 프로젝트를 통해 탄소 감축을 달성하고, 동시에 새로운 시장과 비즈니스 기회를 창출합니다.</p>
+
+      <!-- RIGHT: Visualization & scenarios -->
+      <div>
+        <div class="card">
+          <div class="section-title"><h2>네트워크 시각화</h2><div class="muted">연결선을 눌러 상세 매칭 설명 보기</div></div>
+          <div class="network-wrap">
+            <svg class="network" viewBox="0 0 900 360" id="networkSvg" role="img" aria-label="협력 네트워크">
+              <!-- nodes & lines injected by JS -->
+            </svg>
+          </div>
+          <div class="foot muted" id="nodeInfo">노드를 클릭하거나 매칭 실행 후 결과를 확인하세요.</div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="section-title"><h2>시나리오 예시</h2><div class="muted">선택하면 해당 매칭을 네트워크에서 하이라이트</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn alt" id="example1">시나리오: 방글라데시 섬유 + 독일 재생에너지</button>
+            <button class="btn alt" id="example2">시나리오: 인도 발전소 + 한국 스마트그리드</button>
+          </div>
+          <div class="foot muted" style="margin-top:10px">시나리오를 눌러 예시 매칭을 불러오세요.</div>
+        </div>
       </div>
     </div>
-  </section>
-
-  <!-- Interactive Chart Section -->
-  <section>
-    <h2>국가별 감축률 시뮬레이션</h2>
-    <p>마우스를 올리면 각국의 협력 효과를 시각적으로 확인할 수 있습니다.</p>
-    <div class="chart">
-      <div class="bar" style="height:160px;"><span>한국</span></div>
-      <div class="bar" style="height:200px;"><span>독일</span></div>
-      <div class="bar" style="height:140px;"><span>인도</span></div>
-      <div class="bar" style="height:180px;"><span>미국</span></div>
-      <div class="bar" style="height:120px;"><span>브라질</span></div>
-    </div>
-  </section>
-
-  <!-- Business Impact Section -->
-  <section>
-    <h2>AI로 실현하는 비즈니스 사례</h2>
-    <p>예시 시나리오: 방글라데시 섬유기업 🌱 + 독일 재생에너지 스타트업 ⚙️</p>
-    <p>AI가 프로젝트를 매칭하여 연간 20% 탄소 감축과 신시장 진출을 동시에 달성했습니다.</p>
-  </section>
-
-  <footer>
-    © 2025 AI-Green Network | "Sustainability is not a cost — it’s the future of business."
-  </footer>
+  </main>
 
   <script>
-    // Bar Hover Animation (간단)
-    const bars = document.querySelectorAll(".bar");
-    bars.forEach(bar => {
-      const height = bar.style.height;
-      bar.style.height = "0px";
-      setTimeout(() => { bar.style.transition = "height 1s ease"; bar.style.height = height; }, 300);
+    /* ===========================
+       데이터 구조 (클라이언트 샘플)
+       =========================== */
+    let dataset = []; // {id,name,type,sector,emission,tech,invest}
+    let matches = []; // {giver,receiver,score,detail}
+
+    const dataListEl = document.getElementById('dataList');
+    const resultTbody = document.querySelector('#resultTable tbody');
+    const networkSvg = document.getElementById('networkSvg');
+    const nodeInfo = document.getElementById('nodeInfo');
+
+    // Form elements
+    const newName = document.getElementById('newName');
+    const newType = document.getElementById('newType');
+    const newSector = document.getElementById('newSector');
+    const newEmission = document.getElementById('newEmission');
+    const newTech = document.getElementById('newTech');
+    const newInvest = document.getElementById('newInvest');
+    const addEntryBtn = document.getElementById('addEntry');
+    const loadSampleBtn = document.getElementById('loadSample');
+    const clearAllBtn = document.getElementById('clearAll');
+
+    // weights
+    const wEmission = document.getElementById('wEmission');
+    const wTech = document.getElementById('wTech');
+    const wInvest = document.getElementById('wInvest');
+    const wEVal = document.getElementById('wEVal');
+    const wTVal = document.getElementById('wTVal');
+    const wIVal = document.getElementById('wIVal');
+
+    // actions
+    document.getElementById('runMatch').addEventListener('click', runMatching);
+    document.getElementById('resetMatches').addEventListener('click', ()=>{ matches=[]; renderMatches(); renderNetwork(); });
+    document.getElementById('exportCSV').addEventListener('click', exportMatchesCSV);
+    document.getElementById('downloadData').addEventListener('click', ()=>downloadJSON(dataset,'ai-green-data.json'));
+    document.getElementById('loadSample').addEventListener('click', loadSampleData);
+    document.getElementById('clearAll').addEventListener('click', ()=>{ dataset=[]; matches=[]; renderDataList(); renderNetwork(); renderMatches(); });
+
+    addEntryBtn.addEventListener('click', ()=>{
+      const name = newName.value.trim();
+      if(!name){ alert('이름을 입력하세요'); return; }
+      const obj = {
+        id: 'id'+Date.now(),
+        name,
+        type: newType.value,
+        sector: newSector.value || 'general',
+        emission: clampNum(parseFloat(newEmission.value),0,100),
+        tech: clampNum(parseFloat(newTech.value),0,100),
+        invest: clampNum(parseFloat(newInvest.value),0,100)
+      };
+      dataset.push(obj);
+      renderDataList();
+      renderNetwork();
+      // clear
+      newName.value=''; newSector.value=''; newEmission.value=''; newTech.value=''; newInvest.value='';
     });
+
+    // slider displays
+    function updateWeightsDisplay(){ wEVal.textContent = parseFloat(wEmission.value).toFixed(1); wTVal.textContent = parseFloat(wTech.value).toFixed(1); wIVal.textContent = parseFloat(wInvest.value).toFixed(1); }
+    [wEmission,wTech,wInvest].forEach(s=>s.addEventListener('input', updateWeightsDisplay));
+    updateWeightsDisplay();
+
+    // sample data loader
+    function loadSampleData(){
+      dataset = [
+        {id:'s1',name:'SUI - RenewableCorp',type:'company',sector:'energy',emission:8,tech:92,invest:80},
+        {id:'s2',name:'KOR - SmartGrid Co',type:'company',sector:'grid',emission:22,tech:85,invest:70},
+        {id:'s3',name:'GER - GreenTech GmbH',type:'company',sector:'energy',emission:12,tech:90,invest:85},
+        {id:'c1',name:'BAN - Textile Co (BD)',type:'country',sector:'textiles',emission:65,tech:30,invest:25},
+        {id:'c2',name:'NGA - Local Energy (NG)',type:'country',sector:'power',emission:72,tech:28,invest:20},
+        {id:'c3',name:'IDN - AgroExport (ID)',type:'country',sector:'agri',emission:48,tech:40,invest:30},
+        {id:'c4',name:'IND - Thermal Plant (IN)',type:'country',sector:'power',emission:80,tech:35,invest:40},
+        {id:'compX',name:'KOR - SolarSys',type:'company',sector:'energy',emission:10,tech:78,invest:60}
+      ];
+      renderDataList();
+      renderNetwork();
+    }
+
+    // Utility
+    function clampNum(v,min,max){ if(Number.isNaN(v)) return 0; return Math.max(min,Math.min(max,Math.round(v))); }
+    function downloadJSON(obj, filename='data.json'){ const blob = new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url); }
+
+    // render data list
+    function renderDataList(){
+      dataListEl.innerHTML='';
+      if(dataset.length===0){ dataListEl.innerHTML = '<div class="small muted">데이터가 없습니다. 샘플 불러오기 또는 항목을 추가하세요.</div>'; return; }
+      dataset.forEach(d=>{
+        const el = document.createElement('div'); el.className='item';
+        const left = document.createElement('div');
+        left.innerHTML = `<div style="font-weight:700">${escapeHtml(d.name)}</div><div class="small">${escapeHtml(d.type)} · ${escapeHtml(d.sector)}</div>`;
+        const right = document.createElement('div');
+        right.innerHTML = `<div class="meta">E:${d.emission} T:${d.tech} I:${d.invest}</div><div style="margin-top:6px"><button class="btn alt" data-id="${d.id}">삭제</button></div>`;
+        el.appendChild(left); el.appendChild(right);
+        dataListEl.appendChild(el);
+      });
+      // attach delete handlers
+      dataListEl.querySelectorAll('button[data-id]').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const id = e.target.getAttribute('data-id');
+          dataset = dataset.filter(x=>x.id!==id);
+          renderDataList(); renderNetwork();
+        });
+      });
+    }
+
+    // ==========================
+    // Matching engine (client)
+    // ==========================
+    /*
+      기본 아이디어:
+      - '공여자'는 tech & invest가 높은 기업 (type='company' 우선)
+      - '수혜자'는 emission(높음) & tech 낮음인 항목 (type='country' 또는 company)
+      - 각 pair에 대해 호환도(score) 계산:
+          score = wE * normalized_need + wTech * tech_fit + wInvest * invest_score + sector_bonus
+      - normalized_need: 상대방(emission)을 기준으로 0~1 (높을수록 필요)
+      - tech_fit: giver.tech / (1 + receiver.tech) 형식 (높을수록 좋음)
+      - invest_score: giver.invest normalized
+      - sector_bonus: 동일 섹터이면 가산
+    */
+
+    function computeScore(giver, receiver, weights){
+      // normalized values in 0..1
+      const need = (receiver.emission)/100; // higher means more need
+      const techFit = giver.tech / (1 + receiver.tech); // up to ~1
+      const invest = giver.invest/100;
+      // sector bonus: if giver sector matches receiver sector (or giver energy->any power/textile fits)
+      let sectorBonus = 0;
+      if(giver.sector === receiver.sector) sectorBonus = 0.12;
+      // cross-sector compatibility heuristics (energy <-> power => good)
+      const crossGood = (giver.sector==='energy' && receiver.sector==='power') || (giver.sector==='power' && receiver.sector==='energy');
+      if(crossGood) sectorBonus = Math.max(sectorBonus,0.08);
+      // distance penalty: none (could include geopolitical distance if available)
+      const raw = weights.emission*need + weights.tech*techFit + weights.invest*invest + sectorBonus;
+      // scale to 0..100
+      return {
+        score: Math.round(Math.min(1, raw/ (weights.emission + weights.tech + weights.invest + 0.2) ) * 100),
+        detail: {
+          need: round(need,2),
+          techFit: round(techFit,2),
+          invest: round(invest,2),
+          sectorBonus: round(sectorBonus,2),
+          raw: round(raw,3)
+        }
+      };
+    }
+
+    function round(v,n=2){ return Math.round(v*Math.pow(10,n))/Math.pow(10,n); }
+
+    function runMatching(){
+      matches = [];
+      if(dataset.length===0){ alert('데이터가 없습니다.'); return; }
+      const weights = { emission: parseFloat(wEmission.value), tech: parseFloat(wTech.value), invest: parseFloat(wInvest.value) };
+      // choose donors: companies with tech+invest relatively high
+      const donors = dataset.filter(d=>d.type==='company').sort((a,b)=> (b.tech+b.invest)-(a.tech+a.invest));
+      // choose receivers: countries or companies with high emission
+      const receivers = dataset.filter(d=>d.id && d.emission>0).sort((a,b)=> b.emission - a.emission);
+
+      // simple greedy matching: for each donor, compute best receiver (score), allow multiple donors -> same receiver allowed
+      donors.forEach(d => {
+        let best = null;
+        receivers.forEach(r=>{
+          if(d.id === r.id) return;
+          const res = computeScore(d,r,weights);
+          if(!best || res.score > best.score) best = {receiver: r, score: res.score, detail: res.detail};
+        });
+        if(best){
+          matches.push({giver:d, receiver:best.receiver, score:best.score, detail:best.detail});
+        }
+      });
+
+      // sort by score desc
+      matches.sort((a,b)=> b.score - a.score);
+      renderMatches();
+      renderNetwork();
+      nodeInfo.textContent = `매칭 ${matches.length}건이 생성되었습니다. 표에서 '상세'를 눌러 이유를 확인하세요.`;
+    }
+
+    function renderMatches(){
+      resultTbody.innerHTML='';
+      if(matches.length===0){ resultTbody.innerHTML = '<tr><td colspan="4" class="small muted">매칭 결과가 없습니다.</td></tr>'; return; }
+      matches.forEach((m,i)=>{
+        const tr = document.createElement('tr');
+        const giver = `<td>${escapeHtml(m.giver.name)}</td>`;
+        const receiver = `<td>${escapeHtml(m.receiver.name)}</td>`;
+        const score = `<td style="font-weight:700;color:${m.score>=70? 'green':'#dd8e00'}">${m.score}</td>`;
+        const detailBtn = `<td><button class="btn alt" data-idx="${i}">상세</button></td>`;
+        tr.innerHTML = giver + receiver + score + detailBtn;
+        resultTbody.appendChild(tr);
+      });
+      // attach detail handlers
+      resultTbody.querySelectorAll('button[data-idx]').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const idx = parseInt(e.target.getAttribute('data-idx'),10);
+          const m = matches[idx];
+          alert(`${m.giver.name} → ${m.receiver.name}\n점수: ${m.score}\n\n상세요인:\n- 필요도(need): ${m.detail.need}\n- 기술적합도(techFit): ${m.detail.techFit}\n- 투자여력(invest): ${m.detail.invest}\n- 섹터보너스: ${m.detail.sectorBonus}\n- raw: ${m.detail.raw}\n\n(이 값들은 가중치 기반 시뮬레이션 결과입니다)`);
+        });
+      });
+    }
+
+    // Export matches as CSV
+    function exportMatchesCSV(){
+      if(matches.length===0){ alert('매칭 결과가 없습니다.'); return; }
+      const lines = [['giver','receiver','score','need','techFit','invest','sectorBonus','raw']];
+      matches.forEach(m=>{
+        lines.push([m.giver.name, m.receiver.name, m.score, m.detail.need, m.detail.techFit, m.detail.invest, m.detail.sectorBonus, m.detail.raw]);
+      });
+      const csv = lines.map(r=> r.map(c=> `"${(''+c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv],{type:'text/csv'}); const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='ai-green-matches.csv'; a.click(); URL.revokeObjectURL(url);
+    }
+
+    // =======================
+    // Network visualization
+    // =======================
+    function renderNetwork(){
+      // layout nodes: donors (left column), receivers (right column)
+      networkSvg.innerHTML = ''; // clear
+      const donors = dataset.filter(d=>d.type==='company');
+      const receivers = dataset.filter(d=>d.type!=='company' || d.type==='country' || true); // include all as potential
+      const leftX = 140, rightX = 760;
+      const height = 320;
+      const lSpacing = donors.length>0 ? height/(donors.length+1) : 40;
+      const rSpacing = receivers.length>0 ? height/(receivers.length+1) : 40;
+
+      const donorNodes = donors.map((d,i)=>{
+        return {data:d, x:leftX, y: (i+1)*lSpacing, id:d.id};
+      });
+      const recvNodes = receivers.map((d,i)=>{
+        return {data:d, x:rightX, y: (i+1)*rSpacing, id:d.id};
+      });
+
+      // draw links if matches exist, else draw faint grid
+      // draw nodes
+      const ns = createNS('g'); networkSvg.appendChild(ns);
+      // draw links first
+      if(matches.length>0){
+        matches.forEach((m,idx)=>{
+          const from = donorNodes.find(n=>n.id===m.giver.id);
+          const to = recvNodes.find(n=>n.id===m.receiver.id);
+          if(!from || !to) return;
+          const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+          const d = `M ${from.x+30} ${from.y} C ${from.x+180} ${from.y}, ${to.x-180} ${to.y}, ${to.x-30} ${to.y}`;
+          path.setAttribute('d', d);
+          path.setAttribute('stroke', 'rgba(0,119,182,0.14)');
+          path.setAttribute('fill','none');
+          path.setAttribute('stroke-width', Math.max(1, Math.round(m.score/30)));
+          path.setAttribute('data-idx', idx);
+          path.style.transition='stroke-width .3s, stroke .2s';
+          path.addEventListener('mouseenter', ()=>{ path.setAttribute('stroke','rgba(0,168,107,0.9)'); nodeInfo.textContent = `${m.giver.name} → ${m.receiver.name} : score ${m.score}`;});
+          path.addEventListener('mouseleave', ()=>{ path.setAttribute('stroke','rgba(0,119,182,0.14)'); nodeInfo.textContent = `매칭 ${matches.length}건`});
+          path.addEventListener('click', ()=>{ alert(`매칭 상세:\n${m.giver.name} → ${m.receiver.name}\n점수: ${m.score}\n상세: ${JSON.stringify(m.detail)}`) });
+          networkSvg.appendChild(path);
+        });
+      } else {
+        // faint connector grid
+        const grid = document.createElementNS('http://www.w3.org/2000/svg','g');
+        donors.forEach(from=>{
+          recvNodes.forEach(to=>{
+            const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+            const d = `M ${from.x+30} ${from.y} C ${from.x+180} ${from.y}, ${to.x-180} ${to.y}, ${to.x-30} ${to.y}`;
+            p.setAttribute('d', d);
+            p.setAttribute('stroke', 'rgba(3,59,56,0.04)');
+            p.setAttribute('fill','none');
+            p.setAttribute('stroke-width', 1);
+            networkSvg.appendChild(p);
+          });
+        });
+      }
+
+      // draw donor nodes
+      donorNodes.forEach(n=>{
+        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.setAttribute('transform', `translate(${n.x},${n.y})`);
+        g.classList.add('node');
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        rect.setAttribute('x', -18); rect.setAttribute('y', -18); rect.setAttribute('width', 140); rect.setAttribute('height', 36);
+        rect.setAttribute('rx',10); rect.setAttribute('fill','#e6f8f3'); rect.setAttribute('stroke','#bfeee0');
+        const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+        text.setAttribute('x', 6); text.setAttribute('y', 6); text.setAttribute('fill','#04332f'); text.setAttribute('font-size','12');
+        text.setAttribute('font-weight','700'); text.textContent = trimText(n.data.name,24);
+
+        g.appendChild(rect); g.appendChild(text);
+        g.addEventListener('click', ()=>{ nodeInfo.textContent = `${n.data.name} · E:${n.data.emission} T:${n.data.tech} I:${n.data.invest}`; });
+        networkSvg.appendChild(g);
+      });
+
+      // draw receiver nodes
+      recvNodes.forEach(n=>{
+        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.setAttribute('transform', `translate(${n.x},${n.y})`);
+        g.classList.add('node');
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        rect.setAttribute('x', -120); rect.setAttribute('y', -18); rect.setAttribute('width', 140); rect.setAttribute('height', 36);
+        rect.setAttribute('rx',10); rect.setAttribute('fill','#fff7e8'); rect.setAttribute('stroke','#ffebc8');
+        const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+        text.setAttribute('x', -114); text.setAttribute('y', 6); text.setAttribute('fill','#5b3b00'); text.setAttribute('font-size','12');
+        text.setAttribute('font-weight','700'); text.textContent = trimText(n.data.name,24);
+
+        g.appendChild(rect); g.appendChild(text);
+        g.addEventListener('click', ()=>{ nodeInfo.textContent = `${n.data.name} · E:${n.data.emission} T:${n.data.tech} I:${n.data.invest}`; });
+        networkSvg.appendChild(g);
+      });
+    }
+
+    // helpers for SVG
+    function createNS(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+    function trimText(s,n){ return s.length>n ? s.slice(0,n-1)+'…' : s; }
+
+    // escape HTML
+    function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    // download matches CSV convenience
+    function downloadCSV(text, filename='data.csv'){ const blob = new Blob([text],{type:'text/csv'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url); }
+    function downloadJSON(obj, filename='data.json'){ const blob = new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url); }
+
+    // exportMatchesCSV button
+    document.getElementById('exportCSV').addEventListener('click', ()=>{
+      exportMatchesCSV();
+    });
+
+    // basic CSV exporter used earlier
+    function exportMatchesCSV(){
+      if(matches.length===0){ alert('매칭 결과가 없습니다.'); return; }
+      const lines = [['giver','receiver','score','need','techFit','invest','sectorBonus','raw']];
+      matches.forEach(m=>{
+        lines.push([m.giver.name, m.receiver.name, m.score, m.detail.need, m.detail.techFit, m.detail.invest, m.detail.sectorBonus, m.detail.raw]);
+      });
+      const csv = lines.map(r=> r.map(c=> `"${(''+c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      downloadCSV(csv,'ai-green-matches.csv');
+    }
+
+    // scenario buttons
+    document.getElementById('example1').addEventListener('click', ()=>{
+      loadSampleData();
+      // Ensure matching then highlight expected
+      setTimeout(()=>{ runMatching(); alert('시나리오 로드 완료: 방글라데시 섬유 + 독일 재생에너지 예시를 확인하세요.'); }, 120);
+    });
+    document.getElementById('example2').addEventListener('click', ()=>{
+      loadSampleData();
+      // tweak sample to reflect scenario
+      // add "KOR - SmartGrid Co" already in sample
+      setTimeout(()=>{ runMatching(); alert('시나리오 로드 완료: 인도 발전소 + 한국 스마트그리드 예시를 확인하세요.'); }, 120);
+    });
+
+    // initial render
+    renderDataList();
+    renderNetwork();
+    renderMatches();
+
+    // small UX polish: animate chart-like bars when dataset changes? omitted for simplicity
+
   </script>
 </body>
 </html>
